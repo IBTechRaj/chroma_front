@@ -4,13 +4,21 @@ import { FaEye } from "react-icons/fa";
 import { FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate } from 'react-router-dom';
 import imageTobase64 from '../helpers/imageTobase64';
-// import SummaryApi from '../common';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 
 const SignUp = () => {
+    const [image, setImage] = useState({ preview: '', raw: '' })
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
+    const onImageChange = (event) => {
+        setImage({
+            preview: URL.createObjectURL(event.target.files[0]),
+            raw: event.target.files[0]
+        })
+    }
+
     const [data, setData] = useState({
         name: "",
         email: "",
@@ -31,19 +39,26 @@ const SignUp = () => {
         })
     }
 
-    const handleUploadPic = async (e) => {
-        const file = e.target.files[0]
+    // const onImageChange = (event) => {
+    //     setImage({
+    //         preview: URL.createObjectURL(event.target.files[0]),
+    //         raw: event.target.files[0]
+    //     })
+    // }
 
-        const imagePic = await imageTobase64(file)
+    // const handleUploadPic = async (e) => {
+    //     const file = e.target.files[0]
 
-        setData((preve) => {
-            return {
-                ...preve,
-                profilePic: imagePic
-            }
-        })
+    //     const imagePic = await imageTobase64(file)
 
-    }
+    //     setData((preve) => {
+    //         return {
+    //             ...preve,
+    //             profilePic: imagePic
+    //         }
+    //     })
+
+    // }
 
     const user = {
         name: data.name,
@@ -54,47 +69,59 @@ const SignUp = () => {
     }
     const handleSubmit = async (e) => {
         e.preventDefault()
-        const signUpUrl = (process.env.REACT_APP_SERVER) ? `https://coaching-q9o7.onrender.com/api/v1/users` : `http://localhost:3001/api/v1/users`
+        const signUpUrl = (process.env.REACT_APP_SERVER) ? `https://coaching-q9o7.onrender.com/users` : `http://localhost:3001/users`
 
         if (data.password === data.password_confirmation) {
 
 
-            console.log('dat', user)
+
+            const formData = new FormData();
+            formData.append('name', data.name)
+            formData.append('email', data.email)
+            formData.append('role', 'customer')
+            formData.append('password', data.password)
+            formData.append('password_confirmation', data.password_confirmation)
+            // if (image.raw)
+            formData.append('profile_pic', image.raw)
+            console.log('dat', formData)
+            for (let pair of formData.entries()) {
+                console.log(pair[0] + ": " + pair[1]);
+            }
+
+            // fetch(signUpUrl, {
+            //     headers: {
+            //         "Accept": "application/json"
+            //     },
+            //     method: 'POST',
+            //     body: formData
+            // })
+            //     .then((res) => res.json())
+            //     .then((res) => {
+            //         console.log('res', res)
+            //         alert("Your profile created successfully! View the email we sent you")
+            //     })
+            //     .catch((err) => alert(err));
+
 
             try {
-                const response = await axios.post(signUpUrl,// user,
+                const response = await axios.post(signUpUrl, formData,
                     {
-                        user: {
-                            name: data.name,
-                            email: data.email,
-                            password: data.password,
-                            password_confirmation: data.password_confirmation,
-                            profile_pic: data.profilePic,
-                        },
-                    },
-                    {
-
                         headers: {
-                            "content-type": "application/json"
+                            // "content-type": "application/json"
+                            "Content-Type": "multipart/form-data",
                         }
-
                     })
                 console.log('da', response)
-                if (response.status === 201) {
+                if (response.status === 200) {
                     toast.success(response.data.message)
                     navigate("/login")
                 }
             } catch (error) {
                 if (error.status === 422) {
-                    console.log('err', 'Email already taken')
-                    toast.error('Email already taken')
+                    console.log('err', error)
+                    toast.error(error.response.data.errors)
                 }
-                // const dataApi = await dataResponse.json()
 
-
-                // if (response.status != 201) {
-                //     toast.error(response.message)
-                // }
             }
         } else {
             toast.error("Please check password and confirm password")
@@ -110,14 +137,20 @@ const SignUp = () => {
 
                     <div className='w-20 h-20 mx-auto relative overflow-hidden rounded-full'>
                         <div>
-                            <img src={data.profilePic || loginIcons} alt='login icons' />
+                            {/* <img src={data.profilePic || loginIcons} alt='login icons' /> */}
+                            <img src={image.preview || loginIcons} alt="login icons" />
                         </div>
                         <form>
                             <label>
                                 <div className='text-xs bg-opacity-80 bg-slate-200 pb-4 pt-2 cursor-pointer text-center absolute bottom-0 w-full'>
                                     Upload  Photo
                                 </div>
-                                <input type='file' className='hidden' onChange={handleUploadPic} />
+                                {/* <input type='file' className='hidden' onChange={handleUploadPic} /> */}
+                                <input type="file"
+                                    accept="image/*"
+                                    multiple={false}
+                                    onChange={onImageChange}
+                                />
                             </label>
                         </form>
                     </div>

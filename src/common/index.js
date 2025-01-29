@@ -10,12 +10,12 @@ const SummaryApi = {
         url: `${backendDomin}/api/signin`,
         method: "post"
     },
-    users: {
-        // current_user: {
-        url: `${backendDomin}/api/v1/users`,
-        // url: `${backendDomin}/api/user-details`,
-        method: "get"
-    },
+    // users: {
+    // current_user: {
+    // url: `${backendDomin}/api/v1/users`,
+    // url: `${backendDomin}/api/user-details`,
+    // method: "get"
+    // },
     logout_user: {
         url: `${backendDomin}/api/userLogout`,
         method: 'get'

@@ -47,23 +47,45 @@ const Header = () => {
   // }
 
   const handleLogout = async () => {
-    const fetchData = await axios.get(SummaryApi.logout_user.url, {
-      headers: {
-        'Authorization': `Bearer ${token}`
+    console.log('in logout')
+    try {
+      const logoutUrl = (process.env.REACT_APP_SERVER) ? `https://coaching-q9o7.onrender.com/users/logout` : `http://localhost:3001/users/logout`
+      const response = await axios.post(logoutUrl, null, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      })
+      if (response.status === 200) {
+        toast.success(response.data.message)
+        dispatch(setUserDetails(null))
+        navigate("/")
       }
-    })
-
-    // const data = await fetchData.json()
-
-    if (fetchData.data.success) {
-      toast.success(fetchData.data.message)
-      dispatch(setUserDetails(null))
-      navigate("/")
+      console.log('Logout response:', response);
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Clear the token and redirect
+      localStorage.removeItem('token');
+      // window.location.href = '/login';
     }
 
-    if (fetchData.data.error) {
-      toast.error(fetchData.data.message)
-    }
+    // const fetchData = await axios.get(SummaryApi.logout_user.url, {
+    //   headers: {
+    //     'Authorization': `Bearer ${token}`
+    //   }
+    // })
+
+    // // const data = await fetchData.json()
+
+    // if (fetchData.data.success) {
+    //   toast.success(fetchData.data.message)
+    //   dispatch(setUserDetails(null))
+    //   navigate("/")
+    // }
+
+    // if (fetchData.data.error) {
+    //   toast.error(fetchData.data.message)
+    // }
 
   }
 
@@ -99,11 +121,11 @@ const Header = () => {
           <div className='relative flex justify-center'>
 
             {
-              user?._id && (
+              user?.data?.id && (
                 <div className='text-3xl cursor-pointer relative flex justify-center' onClick={() => setMenuDisplay(preve => !preve)}>
                   {
-                    user?.profilePic ? (
-                      <img src={user?.profilePic} className='w-10 h-10 rounded-full' alt={user?.name} />
+                    user?.data?.attributes?.get_profile_pic_url ? (
+                      <img src={user?.data?.attributes?.get_profile_pic_url} className='w-10 h-10 rounded-full' alt={user?.data?.attributes?.name} />
                     ) : (
                       <FaRegCircleUser />
                     )
@@ -118,7 +140,8 @@ const Header = () => {
                 <div className='absolute bg-white bottom-0 top-11 h-fit p-2 shadow-lg rounded' >
                   <nav>
                     {
-                      user?.role === ROLE.ADMIN && (
+                      // user?.role === ROLE.ADMIN && (
+                      user?.data?.attributes?.role === 'admin' && (
                         <Link to={"/admin-panel/all-products"} className='whitespace-nowrap hidden md:block hover:bg-slate-100 p-2' onClick={() => setMenuDisplay(preve => !preve)}>Admin Panel</Link>
                       )
                     }
@@ -131,7 +154,7 @@ const Header = () => {
           </div>
 
           {
-            user?._id && (
+            user?.data?.id && (
               <Link to={"/cart"} className='text-2xl relative'>
                 <span><FaShoppingCart /></span>
 
@@ -143,12 +166,12 @@ const Header = () => {
             )
           }
 
-          {console.log('uid', user)}
+          {/* {console.log('uid', user)} */}
 
           <div>
             {
 
-              user?._id ? (
+              user?.data?.id ? (
                 <button onClick={handleLogout} className='px-3 py-1 rounded-full text-white bg-red-600 hover:bg-red-700'>Logout</button>
               )
                 : (

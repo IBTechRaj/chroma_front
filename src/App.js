@@ -18,28 +18,33 @@ function App() {
   const dispatch = useDispatch()
   const [cartProductCount, setCartProductCount] = useState(0)
 
-
   const token = localStorage.getItem('token')
-  console.log('tooook', token)
+
+
   const fetchUserDetails = async () => {
-    try {
-      const dataResponse = await axios.get(SummaryApi.users.url, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+    const token = localStorage.getItem('token')
+    console.log('tooook', token)
+    if (token) {
+      try {
+        const currentUserUrl = (process.env.REACT_APP_SERVER) ? `https://coaching-q9o7.onrender.com/users/current_user` : `http://localhost:3001/users/current_user`
+
+        const dataResponse = await axios.get(currentUserUrl, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+        )
+        // const dataApi = await dataResponse.json()
+        console.log('fetch u d dataapi', dataResponse)
+
+        if (dataResponse.status === 200) {
+          dispatch(setUserDetails(dataResponse.data))
         }
       }
-      )
-      // const dataApi = await dataResponse.json()
-      console.log('fetch u d dataapi', dataResponse.data.data)
-
-      if (dataResponse.data.success) {
-        dispatch(setUserDetails(dataResponse.data.data))
+      catch (error) {
+        console.error('Error fetching user details:', error);
       }
     }
-    catch (error) {
-      console.error('Error fetching user details:', error);
-    }
-
 
   }
 
@@ -60,7 +65,7 @@ function App() {
 
   useEffect(() => {
     /**user Details */
-    // fetchUserDetails()
+    fetchUserDetails()
     /**user Details cart product */
     // fetchUserAddToCart()
 
