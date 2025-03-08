@@ -7,7 +7,7 @@ import Footer from './components/Footer';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useEffect, useState } from 'react';
-import SummaryApi from './common';
+// import SummaryApi from './common';
 import Context from './context';
 import { useDispatch } from 'react-redux';
 import { setUserDetails } from './store/userSlice';
@@ -16,6 +16,7 @@ import axios from 'axios'
 
 function App() {
   const dispatch = useDispatch()
+  // const [userId, setUserId] = useState(0)
   const [cartProductCount, setCartProductCount] = useState(0)
 
   const token = localStorage.getItem('token')
@@ -38,11 +39,19 @@ function App() {
         console.log('fetch u d dataapi', dataResponse)
 
         if (dataResponse.status === 200) {
+          // setUserId(dataResponse.data.id)
+          // console.log('uid', userId)
           dispatch(setUserDetails(dataResponse.data))
+
+
         }
       }
       catch (error) {
-        console.error('Error fetching user details:', error);
+        if (error.response && error.response.status === 401) {
+          alert("Session expired. Please log in again.");
+          // dispatch(logoutUser()); // Clears Redux state and redirects to login
+        }
+        // console.error('Error fetching user details:', error);
       }
     }
 
@@ -51,23 +60,40 @@ function App() {
 
 
   const fetchUserAddToCart = async () => {
-    const dataResponse = await axios.get(SummaryApi.addToCartProductCount.url, {
-      headers: {
-        'Authorization': `Bearer ${token}`
+    const token = localStorage.getItem('token')
+    const cartCountUrl = (process.env.REACT_APP_SERVER) ? `https://coaching-q9o7.onrender.com/carts/get_user_cart` : `http://localhost:3001/carts/get_user_cart`
+    if (token) {
+      try {
+        const response = await axios.get(cartCountUrl, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        setCartProductCount(response?.data?.cart_items.length)
+        console.log('prod cnt', response)
       }
-    })
-
-    // const dataApi = await dataResponse.json()
-
-    setCartProductCount(dataResponse?.data?.data?.count)
-    console.log('app.us prod cnt', dataResponse)
+      catch (error) {
+        if (error.response && error.response.status === 401) {
+          console.log("Session expired. Please log in again.");
+          // dispatch(logoutUser()); // Clears Redux state and redirects to login
+        }
+        // console.error('Error fetching user details:', error);
+      }
+      // const dataResponse = await axios.get(SummaryApi.addToCartProductCount.url, {
+      //   headers: {
+      //     'Authorization': `Bearer ${token}`
+      //   }
+      // })
+      // setCartProductCount(dataResponse?.data?.data?.count)
+      // console.log('app.us prod cnt', dataResponse)
+    }
   }
 
   useEffect(() => {
     /**user Details */
     fetchUserDetails()
     /**user Details cart product */
-    // fetchUserAddToCart()
+    fetchUserAddToCart()
 
   }, [])
   return (

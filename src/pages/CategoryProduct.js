@@ -2,13 +2,16 @@ import React, { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import productCategory from '../helpers/productCategory'
 import VerticalCard from '../components/VerticalCard'
-import SummaryApi from '../common'
+// import SummaryApi from '../common'
+import axios from 'axios'
 
 const CategoryProduct = () => {
+  // get all products of a category and display with filter and sort options
   const [data, setData] = useState([])
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const location = useLocation()
+  console.log('loc', location)
   const urlSearch = new URLSearchParams(location.search)
   const urlCategoryListinArray = urlSearch.getAll("category")
 
@@ -23,20 +26,40 @@ const CategoryProduct = () => {
   const [sortBy, setSortBy] = useState("")
 
   const fetchData = async () => {
-    const response = await fetch(SummaryApi.filterProduct.url, {
-      method: SummaryApi.filterProduct.method,
-      headers: {
-        "content-type": "application/json"
-      },
-      body: JSON.stringify({
-        category: filterCategoryList
-      })
-    })
+    // get all products of a category
+    const getCategoryProductsUrl = (process.env.REACT_APP_SERVER) ? `https://coaching-q9o7.onrender.com/products` : `http://localhost:3001/products`
+    console.log('ct', filterCategoryList)
+    try {
+      const response = await axios.get(getCategoryProductsUrl, {
+        params: {
+          category: filterCategoryList
+        }
+      });
+      console.log("Filtered Products:", response.data);
+      setData(response?.data || [])
+    } catch (error) {
+      console.error("Error fetching filtered products:", error);
+    }
+    // };
 
-    const dataResponse = await response.json()
-    setData(dataResponse?.data || [])
+
+
+    // const response = await fetch(SummaryApi.filterProduct.url, {
+    //   method: SummaryApi.filterProduct.method,
+    //   headers: {
+    //     "content-type": "application/json"
+    //   },
+    //   body: JSON.stringify({
+    //     category: filterCategoryList
+    //   })
+    // })
+
+    // const dataResponse = await response.json()
+    // setData(dataResponse?.data || [])
+    // }
+
+
   }
-
   const handleSelectCategory = (e) => {
     const { name, value, checked } = e.target
 
@@ -47,7 +70,6 @@ const CategoryProduct = () => {
       }
     })
   }
-
   useEffect(() => {
     fetchData()
   }, [filterCategoryList])
@@ -80,11 +102,11 @@ const CategoryProduct = () => {
     setSortBy(value)
 
     if (value === 'asc') {
-      setData(preve => preve.sort((a, b) => a.sellingPrice - b.sellingPrice))
+      setData(preve => preve.sort((a, b) => a.selling_price - b.selling_price))
     }
 
     if (value === 'dsc') {
-      setData(preve => preve.sort((a, b) => b.sellingPrice - a.sellingPrice))
+      setData(preve => preve.sort((a, b) => b.selling_price - a.selling_price))
     }
   }
 

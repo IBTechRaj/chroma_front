@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import SummaryApi from '../common'
+// import SummaryApi from '../common'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 
@@ -10,15 +10,25 @@ const CategoryList = () => {
     const categoryLoading = new Array(13).fill('?')
 
     const fetchCategoryProduct = async () => {
+        // get one product from each category
         setLoading(true)
-        console.log('resp')
+        // console.log('resp')
         // const response = await fetch(SummaryApi.categoryProduct.url)
-        const response = await axios.get(SummaryApi.categoryProduct.url)
-        console.log('resp 2', response)
-        // const dataResponse = await response.json()
-        setLoading(false)
-        setCategoryProduct(response.data)
-        // console.log('c list', dataResponse)
+
+        const categoryListUrl = (process.env.REACT_APP_SERVER) ? `https://coaching-q9o7.onrender.com/products/category_list` : `http://localhost:3001/products/category_list`
+        try {
+            const response = await axios.get(categoryListUrl
+            )
+            // console.log('cat list', response)
+            setCategoryProduct(response.data)
+            setLoading(false)
+            return response;
+        } catch (error) {
+            console.error("Error fetching category list:", error);
+            return [];
+        }
+
+
     }
 
     useEffect(() => {
@@ -28,6 +38,7 @@ const CategoryList = () => {
     return (
         <div className='container mx-auto p-4'>
             <div className='flex items-center gap-4 justify-between overflow-scroll scrollbar-none'>
+                {/* {console.log('cat', categoryProduct)} */}
                 {
 
                     loading ? (
@@ -39,11 +50,13 @@ const CategoryList = () => {
                         })
                     ) :
                         (
-                            categoryProduct.map((product, index) => {
+
+                            categoryProduct?.map((product, index) => {
+                                // console.log('cat p', product)
                                 return (
                                     <Link to={"/product-category?category=" + product?.category} className='cursor-pointer' key={product?.category}>
                                         <div className='w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden p-4 bg-slate-200 flex items-center justify-center'>
-                                            <img src={product?.productImage[0]} alt={product?.category} className='h-full object-scale-down mix-blend-multiply hover:scale-125 transition-all' />
+                                            <img src={product?.product_image?.toString().split(",")[0]} alt={product?.category} className='h-full object-scale-down mix-blend-multiply hover:scale-125 transition-all' />
                                         </div>
                                         <p className='text-center text-sm md:text-base capitalize'>{product?.category}</p>
                                     </Link>

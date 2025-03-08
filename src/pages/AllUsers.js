@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import SummaryApi from '../common'
+// import SummaryApi from '../common'
 import { toast } from 'react-toastify'
 import moment from 'moment'
 import { MdModeEdit } from "react-icons/md";
@@ -17,20 +17,23 @@ const AllUsers = () => {
     })
 
     const fetchAllUsers = async () => {
-        console.log('au')
         const token = localStorage.getItem('token')
         const allUsersUrl = (process.env.REACT_APP_SERVER) ? `https://coaching-q9o7.onrender.com/users` : `http://localhost:3001/users`
         try {
-            const response = await axios.get(allUsersUrl);
+            const response = await axios.get(allUsersUrl, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    "Content-Type": "multipart/form-data"
 
-            // Manually parse JSON if necessary
-            console.log('response', response.data)
+                },
+            });
             const users = response.data || (await response.json());
-
             setAllUsers(users);
         } catch (err) {
+            if (err.response && err.response.status === 401) {
+                alert("Session expired. Please log in again.");
+            }
             console.error("Error fetching users:", err);
-            // setError("Error fetching users.");
         }
 
 
@@ -85,7 +88,7 @@ const AllUsers = () => {
                     {
                         allUser.map((el, index) => {
                             return (
-                                <tr>
+                                <tr key={el + index}>
                                     <td>{index + 1}</td>
                                     <td>{el?.name}</td>
                                     <td>{el?.email}</td>
@@ -116,8 +119,8 @@ const AllUsers = () => {
                         name={updateUserDetails.name}
                         email={updateUserDetails.email}
                         role={updateUserDetails.role}
-                        userId={updateUserDetails._id}
-                    // callFunc={fetchAllUsers}
+                        userId={updateUserDetails.id}
+                        callFunc={fetchAllUsers}
                     />
                 )
             }

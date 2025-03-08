@@ -67,6 +67,7 @@ const SignUp = () => {
         password_confirmation: data.password_confirmation,
         profile_pic: data.profilePic
     }
+
     const handleSubmit = async (e) => {
         e.preventDefault()
         const signUpUrl = (process.env.REACT_APP_SERVER) ? `https://coaching-q9o7.onrender.com/users` : `http://localhost:3001/users`
@@ -74,7 +75,7 @@ const SignUp = () => {
         if (data.password === data.password_confirmation) {
 
 
-
+            console.log('uu', user)
             const formData = new FormData();
             formData.append('name', data.name)
             formData.append('email', data.email)
@@ -113,7 +114,7 @@ const SignUp = () => {
                     })
                 console.log('da', response)
                 if (response.status === 200) {
-                    toast.success(response.data.message)
+                    toast.success(response.data.meta.message)
                     navigate("/login")
                 }
             } catch (error) {
@@ -149,6 +150,7 @@ const SignUp = () => {
                                 <input type="file"
                                     accept="image/*"
                                     multiple={false}
+                                    className='hidden'
                                     onChange={onImageChange}
                                 />
                             </label>

@@ -26,8 +26,9 @@ const VerticalCardProduct = ({ category, heading }) => {
         const categoryProduct = await fetchCategoryWiseProduct(category)
         setLoading(false)
 
-        // console.log("horizontal data", categoryProduct.data)
+
         setData(categoryProduct?.data)
+        console.log("vertical data", categoryProduct.data)
     }
 
     useEffect(() => {
@@ -76,18 +77,18 @@ const VerticalCardProduct = ({ category, heading }) => {
                     ) : (
                         data.map((product, index) => {
                             return (
-                                <Link to={"product/" + product?._id} className='w-full min-w-[280px]  md:min-w-[320px] max-w-[280px] md:max-w-[320px]  bg-white rounded-sm shadow ' key={index}>
+                                <Link to={"product/" + product?.id} className='w-full min-w-[280px]  md:min-w-[320px] max-w-[280px] md:max-w-[320px]  bg-white rounded-sm shadow ' key={index}>
                                     <div className='bg-slate-200 h-48 p-4 min-w-[280px] md:min-w-[145px] flex justify-center items-center'>
-                                        <img src={product.productImage[0]} className='object-scale-down h-full hover:scale-110 transition-all mix-blend-multiply' />
+                                        <img src={product.product_image.toString().split(",")[0]} className='object-scale-down h-full hover:scale-110 transition-all mix-blend-multiply' />
                                     </div>
                                     <div className='p-4 grid gap-3'>
-                                        <h2 className='font-medium text-base md:text-lg text-ellipsis line-clamp-1 text-black'>{product?.productName}</h2>
+                                        <h2 className='font-medium text-base md:text-lg text-ellipsis line-clamp-1 text-black'>{product?.product_name}</h2>
                                         <p className='capitalize text-slate-500'>{product?.category}</p>
                                         <div className='flex gap-3'>
-                                            <p className='text-red-600 font-medium'>{displayINRCurrency(product?.sellingPrice)}</p>
+                                            <p className='text-red-600 font-medium'>{displayINRCurrency(product?.selling_price)}</p>
                                             <p className='text-slate-500 line-through'>{displayINRCurrency(product?.price)}</p>
                                         </div>
-                                        <button className='text-sm bg-red-600 hover:bg-red-700 text-white px-3 py-0.5 rounded-full' onClick={(e) => handleAddToCart(e, product?._id)}>Add to Cart</button>
+                                        <button className='text-sm bg-red-600 hover:bg-red-700 text-white px-3 py-0.5 rounded-full' onClick={(e) => handleAddToCart(e, product?.id)}>Add to Cart</button>
                                     </div>
                                 </Link>
                             )

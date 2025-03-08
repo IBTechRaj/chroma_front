@@ -5,7 +5,7 @@ import { FaRegCircleUser } from "react-icons/fa6";
 import { FaShoppingCart } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import SummaryApi from '../common';
+// import SummaryApi from '../common';
 import { toast } from 'react-toastify'
 import { setUserDetails } from '../store/userSlice';
 import ROLE from '../common/role';
@@ -121,11 +121,11 @@ const Header = () => {
           <div className='relative flex justify-center'>
 
             {
-              user?.data?.id && (
+              user?.id && (
                 <div className='text-3xl cursor-pointer relative flex justify-center' onClick={() => setMenuDisplay(preve => !preve)}>
                   {
-                    user?.data?.attributes?.get_profile_pic_url ? (
-                      <img src={user?.data?.attributes?.get_profile_pic_url} className='w-10 h-10 rounded-full' alt={user?.data?.attributes?.name} />
+                    user?.get_profile_pic_url ? (
+                      <img src={user?.get_profile_pic_url} className='w-10 h-10 rounded-full' alt={user?.name} />
                     ) : (
                       <FaRegCircleUser />
                     )
@@ -141,7 +141,7 @@ const Header = () => {
                   <nav>
                     {
                       // user?.role === ROLE.ADMIN && (
-                      user?.data?.attributes?.role === 'admin' && (
+                      user?.role === 'admin' && (
                         <Link to={"/admin-panel/all-products"} className='whitespace-nowrap hidden md:block hover:bg-slate-100 p-2' onClick={() => setMenuDisplay(preve => !preve)}>Admin Panel</Link>
                       )
                     }
@@ -154,7 +154,7 @@ const Header = () => {
           </div>
 
           {
-            user?.data?.id && (
+            user?.id && (
               <Link to={"/cart"} className='text-2xl relative'>
                 <span><FaShoppingCart /></span>
 
@@ -171,7 +171,7 @@ const Header = () => {
           <div>
             {
 
-              user?.data?.id ? (
+              user?.id ? (
                 <button onClick={handleLogout} className='px-3 py-1 rounded-full text-white bg-red-600 hover:bg-red-700'>Logout</button>
               )
                 : (

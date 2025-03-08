@@ -1,16 +1,16 @@
 import React, { useContext, useEffect, useState } from 'react'
-import SummaryApi from '../common'
+// import SummaryApi from '../common'
 import Context from '../context'
 import displayINRCurrency from '../helpers/displayCurrency'
 import { MdDelete } from "react-icons/md";
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const Cart = () => {
     const [data, setData] = useState([])
     const [loading, setLoading] = useState(false)
     const context = useContext(Context)
     const loadingCart = new Array(4).fill(null)
-
     const token = localStorage.getItem('token')
     const fetchData = async () => {
 
@@ -22,20 +22,29 @@ const Cart = () => {
         //     },
         // })
 
-        const responseData = await axios.get(SummaryApi.addToCartProductView.url, {
 
-            headers: {
-                "content-type": 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-        })
-        console.log('resp in cart', responseData)
+        const cartCountUrl = (process.env.REACT_APP_SERVER) ? `https://coaching-q9o7.onrender.com/carts/get_user_cart` : `http://localhost:3001/carts/get_user_cart`
+        if (token) {
+            const responseData = await axios.get(cartCountUrl, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            // setData(response?.data)
+            // console.log('cart det', responseData)
+            // console.log('daaaal', responseData.data)
+            if (responseData.status === 200) {
+                setData(responseData.data.cart_items)
+            }
+        }
+        else {
+            alert('Please login to view cart')
+        }
+
 
         // const responseData = await response.json()
 
-        if (responseData.data.success) {
-            setData(responseData.data.data)
-        }
+
 
 
     }
@@ -68,26 +77,40 @@ const Cart = () => {
 
     //     const responseData = await response.json()
 
-    const increaseQty = async (id, qty) => {
-        const responseData = await axios.post(SummaryApi.updateCartProduct.url, {
-            _id: id,
+    // const increaseQty = async (id, qty) => {
+    //            const responseData = await axios.post(SummaryApi.updateCartProduct.url, {
+    //         id: id,
+    //         quantity: qty + 1
+    //     }, {
+    //         headers: {
+    //             "content-type": 'application/json',
+    //             'Authorization': `Bearer ${token}`
+    //         },
+    //     })
+    //     // const responseData = await response.json()
+    //     console.log('cart incr qty', responseData.data.data)
+    //     if (responseData.data.success) {
+    //         fetchData()
+    //     }
+    // }
+
+    const increaseQty = async (cart_item_id, qty) => {
+        const cartUpdateUrl = (process.env.REACT_APP_SERVER) ? `https://coaching-q9o7.onrender.com/carts/update_cart_item` : `http://localhost:3001/carts/update_cart_item`
+        const responseData = await axios.patch(cartUpdateUrl, {
+            cart_item_id: cart_item_id,
             quantity: qty + 1
         }, {
-
             headers: {
                 "content-type": 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-
         })
-
         // const responseData = await response.json()
-        console.log('cart incr qty', responseData.data.data)
-        if (responseData.data.success) {
+        console.log('cart incr qty', responseData.data)
+        if (responseData.data) {
             fetchData()
         }
     }
-
 
     // const decraseQty = async (id, qty) => {
     //     if (qty >= 2) {
@@ -114,29 +137,43 @@ const Cart = () => {
     //     }
     // }
 
-    const decraseQty = async (id, qty) => {
-        if (qty >= 2) {
-            const responseData = await axios.post(SummaryApi.updateCartProduct.url,
-                {
-                    _id: id,
-                    quantity: qty - 1
-                },
-                {
-                    headers: {
-                        "content-type": 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                })
+    // const decraseQty = async (id, qty) => {
+    //     if (qty >= 2) {
+    //         const responseData = await axios.post(SummaryApi.updateCartProduct.url,
+    //             {
+    //                 _id: id,
+    //                 quantity: qty - 1
+    //             },
+    //             {
+    //                 headers: {
+    //                     "content-type": 'application/json',
+    //                     'Authorization': `Bearer ${token}`
+    //                 },
+    //             })
+    //         // const responseData = await response.json()
+    //         if (responseData.data.success) {
+    //             fetchData()
+    //         }
+    //     }
+    // }
 
-            // const responseData = await response.json()
-
-
-            if (responseData.data.success) {
-                fetchData()
-            }
+    const decreaseQty = async (cart_item_id, qty) => {
+        const cartUpdateUrl = (process.env.REACT_APP_SERVER) ? `https://coaching-q9o7.onrender.com/carts/update_cart_item` : `http://localhost:3001/carts/update_cart_item`
+        const responseData = await axios.patch(cartUpdateUrl, {
+            cart_item_id: cart_item_id,
+            quantity: qty - 1
+        }, {
+            headers: {
+                "content-type": 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        })
+        // const responseData = await response.json()
+        console.log('cart decr qty', responseData.data)
+        if (responseData.data) {
+            fetchData()
         }
     }
-
 
     // const deleteCartProduct = async (id) => {
     //     const response = await fetch(SummaryApi.deleteCartProduct.url, {
@@ -161,9 +198,8 @@ const Cart = () => {
     // }
 
     const deleteCartProduct = async (id) => {
-        const responseData = await axios.post(SummaryApi.deleteCartProduct.url, {
-            _id: id,
-        },
+        const cartDeleteUrl = (process.env.REACT_APP_SERVER) ? `https://coaching-q9o7.onrender.com/carts/remove_item/${id}` : `http://localhost:3001/carts/remove_item/${id}`
+        const responseData = await axios.delete(cartDeleteUrl,
             {
                 headers: {
                     "content-type": 'application/json',
@@ -174,20 +210,23 @@ const Cart = () => {
         )
 
         // const responseData = await response.json()
-
-        if (responseData.data.success) {
+        console.log('del', responseData)
+        if (responseData.status === 200) {
+            // alert('Product deleted from the cart')
             fetchData()
+            toast.success('Product deleted from the cart')
             context.fetchUserAddToCart()
         }
     }
 
     const totalQty = data.reduce((previousValue, currentValue) => previousValue + currentValue.quantity, 0)
-    const totalPrice = data.reduce((preve, curr) => preve + (curr.quantity * curr?.productId?.sellingPrice), 0)
+    const totalPrice = data.reduce((preve, curr) => preve + (curr.quantity * curr?.product?.selling_price), 0)
     return (
         <div className='container mx-auto'>
-
+            {/* {console.log('daaat', data)} */}
             <div className='text-center text-lg my-3'>
                 {
+
                     data.length === 0 && !loading && (
                         <p className='bg-white py-5'>No Data</p>
                     )
@@ -209,26 +248,27 @@ const Cart = () => {
                         ) : (
                             data.map((product, index) => {
                                 return (
-                                    <div key={product?._id + "Add To Cart Loading"} className='w-full bg-white h-32 my-2 border border-slate-300  rounded grid grid-cols-[128px,1fr]'>
+                                    <div key={product?.id + "Add To Cart Loading"} className='w-full bg-white h-32 my-2 border border-slate-300  rounded grid grid-cols-[128px,1fr]'>
                                         <div className='w-32 h-32 bg-slate-200'>
-                                            <img src={product?.productId?.productImage[0]} className='w-full h-full object-scale-down mix-blend-multiply' />
+                                            <img src={product?.product.product_image[0]} className='w-full h-full object-scale-down mix-blend-multiply' />
                                         </div>
+                                        {/* {console.log('pppp', product)} */}
                                         <div className='px-4 py-2 relative'>
                                             {/**delete product */}
-                                            <div className='absolute right-0 text-red-600 rounded-full p-2 hover:bg-red-600 hover:text-white cursor-pointer' onClick={() => deleteCartProduct(product?._id)}>
+                                            <div className='absolute right-0 text-red-600 rounded-full p-2 hover:bg-red-600 hover:text-white cursor-pointer' onClick={() => deleteCartProduct(product?.id)}>
                                                 <MdDelete />
                                             </div>
 
-                                            <h2 className='text-lg lg:text-xl text-ellipsis line-clamp-1'>{product?.productId?.productName}</h2>
-                                            <p className='capitalize text-slate-500'>{product?.productId.category}</p>
+                                            <h2 className='text-lg lg:text-xl text-ellipsis line-clamp-1'>{product?.product_name}</h2>
+                                            <p className='capitalize text-slate-500'>{product?.product.category}</p>
                                             <div className='flex items-center justify-between'>
-                                                <p className='text-red-600 font-medium text-lg'>{displayINRCurrency(product?.productId?.sellingPrice)}</p>
-                                                <p className='text-slate-600 font-semibold text-lg'>{displayINRCurrency(product?.productId?.sellingPrice * product?.quantity)}</p>
+                                                <p className='text-red-600 font-medium text-lg'>{displayINRCurrency(product?.product.selling_price)}</p>
+                                                <p className='text-slate-600 font-semibold text-lg'>{displayINRCurrency(product?.product?.selling_price * product?.quantity)}</p>
                                             </div>
                                             <div className='flex items-center gap-3 mt-1'>
-                                                <button className='border border-red-600 text-red-600 hover:bg-red-600 hover:text-white w-6 h-6 flex justify-center items-center rounded ' onClick={() => decraseQty(product?._id, product?.quantity)}>-</button>
+                                                <button className='border border-red-600 text-red-600 hover:bg-red-600 hover:text-white w-6 h-6 flex justify-center items-center rounded ' onClick={() => decreaseQty(product?.id, product?.quantity)}>-</button>
                                                 <span>{product?.quantity}</span>
-                                                <button className='border border-red-600 text-red-600 hover:bg-red-600 hover:text-white w-6 h-6 flex justify-center items-center rounded ' onClick={() => increaseQty(product?._id, product?.quantity)}>+</button>
+                                                <button className='border border-red-600 text-red-600 hover:bg-red-600 hover:text-white w-6 h-6 flex justify-center items-center rounded ' onClick={() => increaseQty(product?.id, product?.quantity)}>+</button>
                                             </div>
                                         </div>
                                     </div>
